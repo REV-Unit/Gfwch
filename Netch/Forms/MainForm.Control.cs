@@ -16,7 +16,7 @@ namespace Netch.Forms
     {
         private bool _isFirstCloseWindow = true;
 
-        private async void ControlFun()
+        private async Task ControlFun()
         {
             Configuration.Save();
             if (State == State.Waiting || State == State.Stopped)
@@ -57,22 +57,6 @@ namespace Netch.Forms
 
                         Hide();
                     }
-
-                    if (Global.Settings.StartedTcping)
-                    {
-                        // 自动检测延迟
-                        _ = Task.Run(() =>
-                        {
-                            while (State == State.Started)
-                            {
-                                server.Test();
-                                // 重绘 ServerComboBox
-                                ServerComboBox.Invalidate();
-
-                                Thread.Sleep(Global.Settings.StartedTcping_Interval * 1000);
-                            }
-                        });
-                    }
                 }
                 else
                 {
@@ -86,7 +70,6 @@ namespace Netch.Forms
                 State = State.Stopping;
                 await MainController.Stop();
                 State = State.Stopped;
-                _ = Task.Run(TestServer);
             }
         }
 

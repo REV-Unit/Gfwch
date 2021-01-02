@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Netch.Utils;
 
@@ -64,41 +65,31 @@ namespace Netch.Models
         ///		测试延迟
         /// </summary>
         /// <returns>延迟</returns>
-        public int Test()
+        public async Task Test()
         {
+            var delay = -1;
             try
             {
-                var destination = DNS.Lookup(Hostname);
-                if (destination == null)
+                var ip = DNS.Lookup(Hostname);
+                if (ip == null)
                 {
-                    return Delay = -2;
+                    delay = -2;
                 }
 
-                var list = new Task<int>[3];
-                for (var i = 0; i < 3; i++)
+                using var ping = new Ping();
+                var pingReply = await ping.SendPingAsync(ip, 1000);
+                if (pingReply.Status == IPStatus.Success)
                 {
-                    list[i] = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            return await Utils.Utils.TCPingAsync(destination, Port);
-                        }
-                        catch (Exception)
-                        {
-                            return -4;
-                        }
-                    });
+                    delay = (int) pingReply.RoundtripTime;
                 }
-
-                Task.WaitAll(list[0], list[1], list[2]);
-
-                var min = Math.Min(list[0].Result, list[1].Result);
-                min = Math.Min(min, list[2].Result);
-                return Delay = min;
             }
             catch (Exception)
             {
-                return Delay = -4;
+                delay = -666;
+            }
+            finally
+            {
+                Delay = delay;
             }
         }
     }

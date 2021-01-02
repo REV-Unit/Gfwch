@@ -75,24 +75,6 @@ namespace Netch.Forms
                 ControlButton.PerformClick();
             }
 
-            // 自动检测延迟
-            Task.Run(() =>
-            {
-                while (true)
-                {
-                    if (State == State.Waiting || State == State.Stopped)
-                    {
-                        TestServer();
-
-                        Thread.Sleep(10000);
-                    }
-                    else
-                    {
-                        Thread.Sleep(200);
-                    }
-                }
-            });
-
             Task.Run(() =>
             {
                 // 检查更新
@@ -343,15 +325,13 @@ namespace Netch.Forms
 
         private async void SpeedPictureBox_Click(object sender, EventArgs e)
         {
-            Enabled = false;
             StatusText(i18N.Translate("Testing"));
             try
             {
-                await Task.Run(TestServer);
+                await TestServer();
             }
             finally
             {
-                Enabled = true;
                 StatusText(i18N.Translate("Test done"));
                 Refresh();
             }

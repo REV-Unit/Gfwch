@@ -26,17 +26,10 @@ namespace Netch.Forms
             _comboBoxInitialized = comboBoxInitialized;
         }
 
-        private static void TestServer()
+        private static Task TestServer()
         {
-            try
-            {
-                Parallel.ForEach(Global.Settings.Server, new ParallelOptions {MaxDegreeOfParallelism = 16},
-                    server => { server.Test(); });
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+            return Task.Run(() => Parallel.ForEach(Global.Settings.Server, new ParallelOptions { MaxDegreeOfParallelism = 16 },
+                                            async server => await server.Test()));
         }
 
         public void SelectLastServer()
