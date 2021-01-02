@@ -28,7 +28,7 @@ namespace Netch.Forms
 
         private static Task TestServer()
         {
-            return Task.Run(() => Parallel.ForEach(Global.Settings.Server, new ParallelOptions { MaxDegreeOfParallelism = 16 },
+            return Task.Run(() => Parallel.ForEach(Global.Settings.Server, new ParallelOptions { MaxDegreeOfParallelism = 32 },
                                             async server => await server.Test()));
         }
 
