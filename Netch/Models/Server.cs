@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Netch.Utils;
 
@@ -70,14 +73,15 @@ namespace Netch.Models
             var delay = -1;
             try
             {
-                var ip = DNS.Lookup(Hostname);
+                var addresses = await Dns.GetHostAddressesAsync(Hostname);
+                var ip = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ip == null)
                 {
                     delay = -2;
                 }
 
                 using var ping = new Ping();
-                var pingReply = await ping.SendPingAsync(ip, 1000);
+                var pingReply = await ping.SendPingAsync(ip);
                 if (pingReply.Status == IPStatus.Success)
                 {
                     delay = (int) pingReply.RoundtripTime;
