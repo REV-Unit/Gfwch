@@ -1,4 +1,4 @@
-name: Netch CI
+name: Gfwch CI
 on: [push, pull_request]
 jobs:
   build:
