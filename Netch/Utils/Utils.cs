@@ -56,7 +56,7 @@ namespace Netch.Utils
             return timeout;
         }
 
-        public static int ICMPing(IPAddress ip, int timeout = 1000)
+        public static async Task<int> ICMPing(IPAddress ip, int timeout = 1000)
         {
             var reply = new Ping().Send(ip, timeout);
 
@@ -216,6 +216,14 @@ namespace Netch.Utils
             func.Invoke(component);
             switch (component)
             {
+                case ListView listView:
+                    // ListView sub item
+                    foreach (var item in listView.Columns.Cast<ColumnHeader>())
+                    {
+                        ComponentIterator(item, func);
+                    }
+
+                    break;
                 case ToolStripMenuItem toolStripMenuItem:
                     // Iterator Menu strip sub item
                     foreach (var item in toolStripMenuItem.DropDownItems.Cast<ToolStripItem>())

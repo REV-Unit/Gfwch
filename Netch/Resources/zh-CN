@@ -67,9 +67,16 @@
     "Manage Subscribe Links": "管理订阅链接",
     "Update Servers From Subscribe Links": "从订阅链接更新服务器",
     "No subscription link": "没有任何一条订阅链接",
-    "Updating in the background": "正在后台更新中",
+    "Updating {0}": "正在更新 {0}",
     "Update {1} server(s) from {0}": "从 {0} 更新 {1} 个服务器",
     "Update servers error from {0}": "从 {0} 更新服务器失败",
+    "Delete the corresponding group of items in the server list?": "是否删除订阅对应服务器？",
+    "Confirm deletion?": "确认删除？",
+    "DeleteServer": "删除订阅节点",
+    "Status": "状态",
+    "Remark": "备注",
+    "Link": "链接",
+    "Unselect": "取消选择",
 
     "Options": "选项",
     "NF Service": "NF 服务",
@@ -81,16 +88,16 @@
     "Modes have been reload": "模式已重载",
     "Clean DNS Cache": "清理 DNS 缓存",
     "DNS cache cleanup succeeded": "DNS 缓存清理成功",
-    
+
     "Update PAC": "更新 PAC",
     "PAC updated successfully": "PAC 更新成功",
     "PAC update failed": "PAC 更新失败",
-    
+
     "Update ACL": "更新 ACL 规则",
     "Update ACL with proxy": "使用代理更新 ACL 规则",
     "ACL updated successfully": "ACL 更新成功",
     "ACL update failed": "ACL 更新失败",
-    
+
     "Open Directory": "打开目录",
 
     "About": "关于",
@@ -122,6 +129,7 @@
     "Add / Modify": "保存/修改",
     "Select a folder": "选择一个目录",
     "Please enter an process name (xxx.exe)": "请输入一个进程名（xxx.exe）",
+    "Rule does not conform to C++ regular expression syntax": "规则不符合C ++正则表达式语法",
     "Scan completed": "扫描完成",
     "Mode added successfully": "模式添加成功",
     "Mode updated successfully": "模式修改成功",
@@ -162,6 +170,7 @@
     "SS DLL": "SS DLL",
     "Modify System DNS": "修改系统 DNS",
     "No Proxy for Udp": "不代理Udp流量",
+    "No Proxy for Tcp": "不代理Tcp流量",
     "ProfileCount": "快捷配置数量",
     "ProfileCount value illegal. Try again.": "快捷配置数值非法。请重试。",
     "STUN_ServerPort value illegal. Try again.": "STUN 端口数值非法。请重试。",
@@ -170,6 +179,7 @@
     "Failed to set the system proxy, it may be caused by the lack of dependent programs. Do you want to jump to Netch's official website to download dependent programs?": "设置系统代理失败，可能是缺少依赖导致，是否跳转 Netch 官网下载依赖程序？",
     "Delay test after start": "启动后延迟测试",
     "Enable": "启用",
+    "ServerPingType": "测速方式",
     "Detection interval(sec)": "检测间隔（秒）",
     "STUN Server": "STUN 服务器",
     "STUN Server Port": "STUN 服务器端口",

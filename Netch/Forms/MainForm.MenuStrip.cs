@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Netch.Controllers;
 using Netch.Forms.Mode;
 using Netch.Models;
-using Netch.Properties;
 using Netch.Utils;
-using Netch.Utils.HttpProxyHandler;
-using Newtonsoft.Json;
 
 namespace Netch.Forms
 {
@@ -212,11 +206,15 @@ namespace Netch.Forms
                     DNS.Cache.Clear();
                 });
 
-                StatusText(i18N.Translate("DNS cache cleanup succeeded"));
+                NotifyTip(i18N.Translate("DNS cache cleanup succeeded"));
             }
             catch (Exception)
             {
                 // ignored
+            }
+            finally
+            {
+                StatusText();
             }
         }
 
@@ -239,8 +237,7 @@ namespace Netch.Forms
             }
 
             Enabled = false;
-
-            NotifyTip(i18N.Translate("Updating in the background"));
+            StatusText(i18N.TranslateFormat("Updating {0}", "ACL"));
             try
             {
                 if (useProxy)
@@ -274,6 +271,7 @@ namespace Netch.Forms
                     State = State.Stopped;
                 }
 
+                StatusText();
                 Enabled = true;
             }
         }
@@ -282,22 +280,15 @@ namespace Netch.Forms
         {
             Enabled = false;
 
-            NotifyTip(i18N.Translate("Updating in the background"));
+            StatusText(i18N.TranslateFormat("Updating {0}", "PAC"));
             try
             {
-                var req = WebUtil.CreateRequest(Global.Settings.GFWLIST);
+                var req = WebUtil.CreateRequest(Global.Settings.PAC);
 
-                string gfwlist = Path.Combine(Global.NetchDir, $"bin\\gfwlist");
-                string pac = Path.Combine(Global.NetchDir, $"bin\\pac.txt");
+                string pac = Path.Combine(Global.NetchDir, "bin\\pac.txt");
 
-                await WebUtil.DownloadFileAsync(req, gfwlist);
-                
-                var gfwContent = File.ReadAllText(gfwlist);
-                List<string> lines = PACUtil.ParseResult(gfwContent);
-                string abpContent = PACUtil.UnGzip(Resources.abp_js);
-                abpContent = abpContent.Replace("__RULES__", JsonConvert.SerializeObject(lines, Formatting.Indented));
-                File.WriteAllText(pac, abpContent, Encoding.UTF8);
-                
+                await WebUtil.DownloadFileAsync(req, pac);
+
                 NotifyTip(i18N.Translate("PAC updated successfully"));
             }
             catch (Exception e)
@@ -307,6 +298,7 @@ namespace Netch.Forms
             }
             finally
             {
+                StatusText();
                 Enabled = true;
             }
         }
@@ -321,24 +313,25 @@ namespace Netch.Forms
                 {
                     if (NFController.UninstallDriver())
                     {
-                        StatusText(i18N.TranslateFormat("{0} has been uninstalled", "NF Service"));
+                        NotifyTip(i18N.TranslateFormat("{0} has been uninstalled", "NF Service"));
                     }
                 });
             }
             finally
             {
+                StatusText();
                 Enabled = true;
             }
         }
 
-        private async void reinstallTapDriverToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void UninstallTapDriverToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            StatusText(i18N.TranslateFormat("Uninstalling {0}", "TUN/TAP driver"));
             Enabled = false;
+            StatusText(i18N.TranslateFormat("Uninstalling {0}", "TUN/TAP driver"));
             try
             {
                 await Task.Run(TUNTAP.deltapall);
-                StatusText(i18N.TranslateFormat("{0} has been uninstalled", "TUN/TAP driver"));
+                NotifyTip(i18N.TranslateFormat("{0} has been uninstalled", "TUN/TAP driver"));
             }
             catch (Exception exception)
             {
@@ -346,7 +339,7 @@ namespace Netch.Forms
             }
             finally
             {
-                State = State.Waiting;
+                StatusText();
                 Enabled = true;
             }
         }
@@ -354,6 +347,9 @@ namespace Netch.Forms
         #endregion
 
 
+        /// <summary>
+        ///     菜单栏强制退出
+        /// </summary>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Exit(true);

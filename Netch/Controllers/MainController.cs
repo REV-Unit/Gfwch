@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Netch.Models;
 using Netch.Servers.Socks5;
@@ -23,6 +24,7 @@ namespace Netch.Controllers
             get => _udpServerController ?? _serverController;
             set => _udpServerController = value;
         }
+        public static Mode Mode;
 
         /// TCP or Both Server
         public static Server Server;
@@ -52,6 +54,7 @@ namespace Netch.Controllers
         {
             Logging.Info($"启动主控制器: {server.Type} [{mode.Type}]{mode.Remark}");
             Server = server;
+            Mode = mode;
 
             if (server is Socks5 && mode.Type == 4)
             {
@@ -149,7 +152,11 @@ namespace Netch.Controllers
                 {
                     if (guard.Instance != null)
                     {
-                        Global.Job.AddProcess(guard.Instance);
+                        Task.Run(() =>
+                        {
+                            Thread.Sleep(1000);
+                            Global.Job.AddProcess(guard.Instance);
+                        });
                     }
                 }
 

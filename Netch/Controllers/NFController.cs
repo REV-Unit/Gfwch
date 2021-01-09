@@ -55,8 +55,11 @@ namespace Netch.Controllers
             #region aio_dial
 
             aio_dial((int) NameList.TYPE_FILTERLOOPBACK, "false");
-            aio_dial((int) NameList.TYPE_FILTERTCP, "true");
             aio_dial((int) NameList.TYPE_TCPLISN, Global.Settings.RedirectorTCPPort.ToString());
+
+            if (Global.Settings.ProcessNoProxyForUdp && Global.Settings.ProcessNoProxyForTcp) MessageBoxX.Show("？");
+
+            //UDP
             if (Global.Settings.ProcessNoProxyForUdp)
             {
                 aio_dial((int) NameList.TYPE_FILTERUDP, "false");
@@ -65,6 +68,18 @@ namespace Netch.Controllers
             else
             {
                 aio_dial((int) NameList.TYPE_FILTERUDP, "true");
+                SetServer(PortType.Both);
+            }
+
+            //TCP
+            if (Global.Settings.ProcessNoProxyForTcp)
+            {
+                aio_dial((int) NameList.TYPE_FILTERTCP, "false");
+                SetServer(PortType.UDP);
+            }
+            else
+            {
+                aio_dial((int) NameList.TYPE_FILTERTCP, "true");
                 SetServer(PortType.Both);
             }
 
@@ -348,7 +363,6 @@ namespace Netch.Controllers
         /// <returns>是否成功卸载</returns>
         public static bool UninstallDriver()
         {
-            Global.MainForm.StatusText(i18N.TranslateFormat("Uninstalling {0}", "NF Service"));
             Logging.Info("卸载 NF 驱动");
             try
             {

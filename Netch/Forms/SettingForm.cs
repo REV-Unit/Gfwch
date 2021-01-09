@@ -1,7 +1,6 @@
 using Netch.Utils;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -59,6 +58,14 @@ namespace Netch.Forms
                 c => Global.Settings.ResolveServerHostname = c,
                 Global.Settings.ResolveServerHostname);
 
+            BindRadioBox(ICMPingRadioBtn,
+                c => Global.Settings.ServerTCPing = c,
+                !Global.Settings.ServerTCPing);
+
+            BindRadioBox(TCPingRadioBtn,
+                c => Global.Settings.ServerTCPing = c,
+                Global.Settings.ServerTCPing);
+
             BindTextBox<int>(ProfileCountTextBox,
                 i => i > -1,
                 i => Global.Settings.ProfileCount = i,
@@ -104,6 +111,10 @@ namespace Netch.Forms
             BindCheckBox(NoProxyForUdpCheckBox,
                 s => Global.Settings.ProcessNoProxyForUdp = s,
                 Global.Settings.ProcessNoProxyForUdp);
+
+            BindCheckBox(NoProxyForTcpCheckBox,
+                s => Global.Settings.ProcessNoProxyForTcp = s,
+                Global.Settings.ProcessNoProxyForTcp);
 
             #endregion
 
@@ -310,10 +321,11 @@ namespace Netch.Forms
                 return;
             }
 
+            #endregion
 
             #region CheckSTUN
 
-            var stunFlag = true;
+            var errFlag = false;
             var stunServer = string.Empty;
             ushort stunServerPort = 3478;
 
@@ -325,21 +337,19 @@ namespace Netch.Forms
                 if (stun.Length > 1)
                     if (!ushort.TryParse(stun[1], out stunServerPort))
                     {
-                        stunFlag = false;
+                        errFlag = true;
                     }
             }
             else
             {
-                stunFlag = false;
+                errFlag = true;
             }
 
-            if (!stunFlag)
+            if (errFlag)
             {
                 Utils.Utils.ChangeControlForeColor(STUN_ServerComboBox, Color.Red);
                 return;
             }
-
-            #endregion
 
             #endregion
 
@@ -418,7 +428,13 @@ namespace Netch.Forms
         {
             control.Checked = value;
             _checkActions.Add(control, s => true);
-            _saveActions.Add(control, c => save.Invoke(((CheckBox) c).Checked));
+            _saveActions.Add(control, c => save.Invoke(((CheckBox)c).Checked));
+        }
+        private void BindRadioBox(RadioButton control, Action<bool> save, bool value)
+        {
+            control.Checked = value;
+            _checkActions.Add(control, s => true);
+            _saveActions.Add(control, c => save.Invoke(((RadioButton)c).Checked));
         }
 
         private readonly Dictionary<Control, Func<string, bool>> _checkActions = new Dictionary<Control, Func<string, bool>>();
@@ -428,6 +444,26 @@ namespace Netch.Forms
         private void ModifySystemDNSCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             ModifiedDNSTextBox.Enabled = ModifySystemDNSCheckBox.Checked;
+        }
+
+        private void NoProxyForUdpCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (NoProxyForUdpCheckBox.Checked) NoProxyForTcpCheckBox.Checked = false;
+        }
+
+        private void NoProxyForTcpCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (NoProxyForTcpCheckBox.Checked) NoProxyForUdpCheckBox.Checked = false;
+        }
+
+        private void ICMPingRadioBtn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ICMPingRadioBtn.Checked) TCPingRadioBtn.Checked = false;
+        }
+
+        private void TCPingRadioBtn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (TCPingRadioBtn.Checked) ICMPingRadioBtn.Checked = false;
         }
     }
 }

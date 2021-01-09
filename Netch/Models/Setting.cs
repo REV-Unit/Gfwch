@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Netch.Models
 {
@@ -87,6 +85,11 @@ namespace Netch.Models
     /// </summary>
     public class Setting
     {
+
+        public V2rayConfig V2RayConfig = new V2rayConfig();
+
+        public AioDNSConfig AioDNS = new AioDNSConfig();
+        
         /// <summary>
         ///		服务器选择位置
         /// </summary>
@@ -255,7 +258,7 @@ namespace Netch.Models
         /// <summary>
         ///     GFWList
         /// </summary>
-        public string GFWLIST = "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt";
+        public string PAC = "https://raw.githubusercontent.com/HMBSbige/Text_Translation/master/ShadowsocksR/ss_white.pac";
 
         /// <summary>
         ///     是否使用DLL启动Shadowsocks
@@ -267,12 +270,24 @@ namespace Netch.Models
         /// </summary>
         public string Language = "System";
 
-        public V2rayConfig V2RayConfig = new V2rayConfig();
+        /// <summary>
+        /// 服务器测试方式 false.ICMPing true.TCPing
+        /// </summary>
+        public bool ServerTCPing = true;
 
-        public AioDNSConfig AioDNS = new AioDNSConfig();
-
+        /// <summary>
+        /// 是否使用RDR内置SS
+        /// </summary>
         public bool RedirectorSS = false;
 
+        /// <summary>
+        /// 不代理UDP
+        /// </summary>
         public bool ProcessNoProxyForUdp = false;
+
+        /// <summary>
+        /// 不代理TCP
+        /// </summary>
+        public bool ProcessNoProxyForTcp = false;
     }
 }

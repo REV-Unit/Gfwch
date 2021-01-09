@@ -38,14 +38,15 @@ namespace Netch.Forms
                     UninstallServiceToolStripMenuItem.Enabled =
                         UpdateACLToolStripMenuItem.Enabled =
                             updateACLWithProxyToolStripMenuItem.Enabled =
-                                UpdateServersFromSubscribeLinksToolStripMenuItem.Enabled =
-                                    UninstallTapDriverToolStripMenuItem.Enabled =
-                                        ReloadModesToolStripMenuItem.Enabled = enabled;
+                                updatePACToolStripMenuItem.Enabled =
+                                    UpdateServersFromSubscribeLinksToolStripMenuItem.Enabled =
+                                        UninstallTapDriverToolStripMenuItem.Enabled =
+                                            ReloadModesToolStripMenuItem.Enabled = enabled;
                 }
 
                 _state = value;
 
-                StatusText(i18N.Translate(StateExtension.GetStatusString(value)));
+                StatusText();
                 switch (value)
                 {
                     case State.Waiting:
@@ -68,14 +69,13 @@ namespace Netch.Forms
 
                         ProfileGroupBox.Enabled = true;
 
-                        UsedBandwidthLabel.Visible /*= UploadSpeedLabel.Visible*/ = DownloadSpeedLabel.Visible = Global.Flags.IsWindows10Upper;
                         break;
                     case State.Stopping:
                         ControlButton.Enabled = false;
                         ControlButton.Text = "...";
 
                         ProfileGroupBox.Enabled = false;
-                        UsedBandwidthLabel.Visible /*= UploadSpeedLabel.Visible*/ = DownloadSpeedLabel.Visible = false;
+                        BandwidthState(false);
                         NatTypeStatusText();
                         break;
                     case State.Stopped:
@@ -95,6 +95,11 @@ namespace Netch.Forms
                         return;
                 }
             }
+        }
+
+        public void BandwidthState(bool state)
+        {
+            UsedBandwidthLabel.Visible /*= UploadSpeedLabel.Visible*/ = DownloadSpeedLabel.Visible = state;
         }
 
         public void NatTypeStatusText(string text = "", string country = "")
@@ -167,7 +172,7 @@ namespace Netch.Forms
         ///     更新状态栏文本
         /// </summary>
         /// <param name="text"></param>
-        public void StatusText(string text)
+        public void StatusText(string text = null)
         {
             if (InvokeRequired)
             {
@@ -175,6 +180,7 @@ namespace Netch.Forms
                 return;
             }
 
+            text ??= i18N.Translate(StateExtension.GetStatusString(State));
             StatusLabel.Text = i18N.Translate("Status", ": ") + text;
         }
 
