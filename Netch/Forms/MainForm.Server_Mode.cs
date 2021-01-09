@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Netch.Utils;
@@ -22,23 +23,29 @@ namespace Netch.Forms
 
             ServerComboBox.Items.Clear();
             ServerComboBox.Items.AddRange(Global.Settings.Server.ToArray());
+
             SelectLastServer();
             _comboBoxInitialized = comboBoxInitialized;
         }
 
         private async Task TestServer()
         {
-            StatusText(i18N.Translate("Testing"));
-            try
+            var servers = Global.Settings.Server;
+            var testingText = i18N.Translate("Testing");
+
+            var completed = 0;
+            var total = servers.Count;
+
+            var tasks = servers.Select(server => Task.Run(async () =>
             {
-                await Task.Run(() => Parallel.ForEach(Global.Settings.Server, new ParallelOptions { MaxDegreeOfParallelism = 32 },
-                                                      async server => await server.Test()));
-            }
-            finally
-            {
-                StatusText(i18N.Translate("Test done"));
-                Refresh();
-            }
+                await server.Test();
+                Interlocked.Increment(ref completed);
+                StatusText($"{testingText} {completed}/{total}");
+            })).ToArray();
+            await Task.WhenAll(tasks);
+
+            ServerComboBox.Refresh();
+            StatusText(i18N.Translate("Test done"));
         }
 
         public void SelectLastServer()
@@ -120,33 +127,39 @@ namespace Netch.Forms
                     case Models.Server item:
                     {
                         // 计算延迟底色
-                        SolidBrush brush;
-                        if (item.Delay > 200)
-                            brush = new SolidBrush(Color.Red);
-                        else if (item.Delay > 80)
-                            brush = new SolidBrush(Color.Yellow);
-                        else if (item.Delay >= 0)
-                            brush = new SolidBrush(Color.FromArgb(50, 255, 56));
-                        else
-                            brush = new SolidBrush(Color.Gray);
+                        var background = item.Delay switch
+                        {
+                            > 200 => new SolidBrush(Color.Red),
+                            > 80  => new SolidBrush(Color.Yellow),
+                            >= 0  => new SolidBrush(Color.FromArgb(50, 255, 56)),
+                            _     => new SolidBrush(Color.Gray)
+                        };
+
+                        var delayString = item.Delay switch
+                        {
+                            -1   => "不可用",
+                            -2   => "DNS",
+                            -666 => "错误",
+                            _    => item.Delay.ToString()
+                        };
 
                         // 绘制延迟底色
-                        e.Graphics.FillRectangle(brush, _eWidth * 9, e.Bounds.Y, _eWidth, e.Bounds.Height);
+                        e.Graphics.FillRectangle(background, _eWidth * 9, e.Bounds.Y, _eWidth, e.Bounds.Height);
 
                         // 绘制延迟字符串
-                        e.Graphics.DrawString(item.Delay.ToString(), cbx.Font, new SolidBrush(Color.Black),
-                            _eWidth * 9 + _eWidth / 30, e.Bounds.Y);
+                        e.Graphics.DrawString(delayString, cbx.Font, new SolidBrush(Color.Black),
+                                              _eWidth * 9 + _eWidth / 30, e.Bounds.Y);
                         break;
                     }
                     case Models.Mode item:
                     {
                         // 绘制 模式Box 底色
                         e.Graphics.FillRectangle(new SolidBrush(Color.Gray), _eWidth * 9, e.Bounds.Y, _eWidth,
-                            e.Bounds.Height);
+                                                 e.Bounds.Height);
 
                         // 绘制 模式行数 字符串
                         e.Graphics.DrawString(item.Rule.Count.ToString(), cbx.Font, new SolidBrush(Color.Black),
-                            _eWidth * 9 + _eWidth / 30, e.Bounds.Y);
+                                              _eWidth * 9 + _eWidth / 30, e.Bounds.Y);
                         break;
                     }
                 }
@@ -168,7 +181,7 @@ namespace Netch.Forms
                     Size = new Size(259, 22),
                     Text = i18N.TranslateFormat("Add [{0}] Server", fullName),
                 };
-                _mainFormText.Add(control.Name, new[] {"Add [{0}] Server", fullName});
+                _mainFormText.Add(control.Name, new[] { "Add [{0}] Server", fullName });
                 control.Click += AddServerToolStripMenuItem_Click;
                 ServerToolStripMenuItem.DropDownItems.Add(control);
             }

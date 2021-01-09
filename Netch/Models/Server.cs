@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -8,7 +9,7 @@ using Netch.Utils;
 
 namespace Netch.Models
 {
-    public class Server:ICloneable
+    public class Server : ICloneable
     {
         /// <summary>
         ///     备注
@@ -70,39 +71,60 @@ namespace Netch.Models
         /// <returns>延迟</returns>
         public async Task Test()
         {
-            static async Task<int> GetDelay(IPAddress ip)
+            const int timeout = 1000;
+
+            static async Task<int> IcmPingAsync(IPAddress ip)
+            {
+                const int avgTimes = 3;
+                var tasks = new Task<PingReply>[avgTimes];
+
+                for (var i = 0; i < avgTimes; i++)
+                {
+                    using var ping = new Ping();
+                    tasks[i] = ping.SendPingAsync(ip, timeout);
+                }
+
+                var replies = await Task.WhenAll(tasks);
+                if (replies.Any(r => r.Status != IPStatus.Success))
+                {
+                    return -1;
+                }
+                return (int) (replies.Sum(r => r.RoundtripTime) / 3);
+            }
+
+            static int TcPing(IPAddress ip, int port)
+            {
+                using var tcpClient = new TcpClient(ip.AddressFamily);
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                var succeed = tcpClient.ConnectAsync(ip, port).Wait(timeout);
+                stopwatch.Stop();
+
+                tcpClient.Close();
+
+                return succeed ? (int) stopwatch.ElapsedMilliseconds : -1;
+            }
+
+            async Task<int> GetDelay(IPAddress ip)
             {
                 if (ip == null)
                 {
                     return -2;
                 }
 
-                var tasks = new Task<PingReply>[3];
-                for (var i = 0; i < 3; i++)
-                {
-                    using var ping = new Ping();
-                    tasks[i] = ping.SendPingAsync(ip);
-                }
-
-                var replies = await Task.WhenAll(tasks);
-
-                if (replies.Any(reply => reply.Status != IPStatus.Success))
-                {
-                    return -1;
-                }
-
-                return replies.Select(reply => (int)reply.RoundtripTime).Sum() / 3;
+                return Global.Settings.ServerTCPing ? await Task.Run(() => TcPing(ip, Port)) : await IcmPingAsync(ip);
             }
 
-            var delay = 0;
             try
             {
                 var addresses = await Dns.GetHostAddressesAsync(Hostname);
-                delay = await GetDelay(addresses.FirstOrDefault());
+                Delay = await GetDelay(addresses.FirstOrDefault());
             }
-            finally
+            catch
             {
-                Delay = delay;
+                Delay = -666;
             }
         }
     }
