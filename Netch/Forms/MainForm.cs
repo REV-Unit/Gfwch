@@ -325,16 +325,7 @@ namespace Netch.Forms
 
         private async void SpeedPictureBox_Click(object sender, EventArgs e)
         {
-            StatusText(i18N.Translate("Testing"));
-            try
-            {
-                await TestServer();
-            }
-            finally
-            {
-                StatusText(i18N.Translate("Test done"));
-                Refresh();
-            }
+            await TestServer();
         }
 
         private void EditModePictureBox_Click(object sender, EventArgs e)

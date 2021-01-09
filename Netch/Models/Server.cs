@@ -70,26 +70,35 @@ namespace Netch.Models
         /// <returns>延迟</returns>
         public async Task Test()
         {
-            var delay = -1;
+            static async Task<int> GetDelay(IPAddress ip)
+            {
+                if (ip == null)
+                {
+                    return -2;
+                }
+
+                var tasks = new Task<PingReply>[3];
+                for (var i = 0; i < 3; i++)
+                {
+                    using var ping = new Ping();
+                    tasks[i] = ping.SendPingAsync(ip);
+                }
+
+                var replies = await Task.WhenAll(tasks);
+
+                if (replies.Any(reply => reply.Status != IPStatus.Success))
+                {
+                    return -1;
+                }
+
+                return replies.Select(reply => (int)reply.RoundtripTime).Sum() / 3;
+            }
+
+            var delay = 0;
             try
             {
                 var addresses = await Dns.GetHostAddressesAsync(Hostname);
-                var ip = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
-                if (ip == null)
-                {
-                    delay = -2;
-                }
-
-                using var ping = new Ping();
-                var pingReply = await ping.SendPingAsync(ip);
-                if (pingReply.Status == IPStatus.Success)
-                {
-                    delay = (int) pingReply.RoundtripTime;
-                }
-            }
-            catch (Exception)
-            {
-                delay = -666;
+                delay = await GetDelay(addresses.FirstOrDefault());
             }
             finally
             {
