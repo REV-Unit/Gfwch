@@ -1,5 +1,9 @@
 name: Gfwch CI
-on: [push, pull_request]
+on:
+  push:
+    paths:
+    - '!*.md'
+  pull_request:
 jobs:
   build:
     name: Build
