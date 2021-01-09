@@ -1,4 +1,4 @@
-# Gfwch ![Gfwch CI](https://github.com/REV-Unit/Gfwch/workflows/Gfwch%20CI/badge.svg)
+# Gfwch [![Gfwch CI](https://github.com/REV-Unit/Gfwch/workflows/Gfwch%20CI/badge.svg)](https://github.com/REV-Unit/Gfwch/actions)
 
 Gfwch 是 [Netch](https://github.com/NetchX/Netch) 的修改版，主要目标是解决原库的一些 *代码问题*，改善性能和用户体验。
 
